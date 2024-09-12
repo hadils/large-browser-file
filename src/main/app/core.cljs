@@ -81,7 +81,7 @@
 (defonce app-state (r/atom {:image nil
                             :drag-start nil
                             :image-pos {:x 0 :y 0}
-                            :image-scale 1
+                            :image-scale 0.1
                             :image-rotation 0}))
 
 (defn draw [id]
@@ -112,13 +112,21 @@
         (.setAttribute image "src" @image-file-url)
         (js/console.error "No image file URL yet."))))
 
-(defn draw-image [canvas image x y scale]
+(defn draw-image [canvas image x y scale rotation]
   (let [ctx (.getContext canvas "2d")
         scaled-width (* (.-width image) scale)
         scaled-height (* (.-height image) scale)]
     (println "scale" scale " x" x " y" y " scaled-width" scaled-width " scaled-height" scaled-height)
     (.clearRect ctx 0 0 (.-width canvas) (.-height canvas))
-    (.drawImage ctx image x y scaled-width scaled-height)))
+    (.save ctx)
+    (.rotate ctx (deg-to-rad rotation))
+    (.translate ctx (+ x (/ scaled-width 2)) (+ y (/ scaled-height 2)))
+    (.drawImage ctx image
+                (- (/ scaled-width 2))
+                (- (/ scaled-height 2))
+                scaled-width
+                scaled-height)
+    (.restore ctx)))
 
 (defn create-image [image-file callback]
   (let [image (.createElement js/document "img")]
@@ -138,7 +146,7 @@
     (let [data (.getImageData ctx 0 0 (.-width canvas) (.-height canvas))]
       (println "data" data)
       (let [buf (.-data data)]
-        (println "width" (.-width image) "height" (.-height image) "bytes per pixel" 3)))))
+        (println "width" (.-width image) "height" (.-height image) "bytes per pixel" 3 "buf" buf)))))
 
 (defn on-image-change [event]
   (let [image-file (.createObjectURL js/URL (first (.. event -target -files)))]
@@ -167,7 +175,7 @@
                    :y (+ (:y (:image-pos @app-state)) dy)}]
       (println "new-pos" new-pos)
       (swap! app-state assoc :image-pos new-pos)
-      (draw-image  canvas (:image @app-state) (:x new-pos) (:y new-pos) 0.1)
+      (draw-image  canvas (:image @app-state) (:x new-pos) (:y new-pos) (:image-scale @app-state) (:image-rotation @app-state))
       (swap! app-state assoc :drag-start {:x x :y y}))))
 
 (defn on-mouse-up []
@@ -182,7 +190,8 @@
              :on-mouse-move on-mouse-move
              :on-mouse-up on-mouse-up
              :on-mouse-leave on-mouse-up}]
-   [:button {:on-click #(draw-image (.getElementById js/document "canvas") (:image @app-state) 0 0 0.1)} "Draw transformed image"]])
+   [:button {:on-click #(draw-image (.getElementById js/document "canvas") (:image @app-state) 0 0 (:image-scale @app-state)
+                                    (:image-rotation @app-state))} "Draw transformed image"]])
 
 (defn ^:dev/after-load mount []
   (rdom/render [app] (js/document.getElementById "app")))

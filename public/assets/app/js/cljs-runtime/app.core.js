@@ -4,7 +4,7 @@ app.core.canvas_width = (640);
 app.core.canvas_height = (640);
 if((typeof app !== 'undefined') && (typeof app.core !== 'undefined') && (typeof app.core.app_state !== 'undefined')){
 } else {
-app.core.app_state = reagent.core.atom.cljs$core$IFn$_invoke$arity$1(new cljs.core.PersistentArrayMap(null, 5, [new cljs.core.Keyword(null,"image","image",-58725096),null,new cljs.core.Keyword(null,"drag-start","drag-start",292353430),null,new cljs.core.Keyword(null,"image-pos","image-pos",2145770002),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"x","x",2099068185),(0),new cljs.core.Keyword(null,"y","y",-1757859776),(0)], null),new cljs.core.Keyword(null,"image-scale","image-scale",1188015597),(1),new cljs.core.Keyword(null,"image-rotation","image-rotation",397517612),(0)], null));
+app.core.app_state = reagent.core.atom.cljs$core$IFn$_invoke$arity$1(new cljs.core.PersistentArrayMap(null, 5, [new cljs.core.Keyword(null,"image","image",-58725096),null,new cljs.core.Keyword(null,"drag-start","drag-start",292353430),null,new cljs.core.Keyword(null,"image-pos","image-pos",2145770002),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"x","x",2099068185),(0),new cljs.core.Keyword(null,"y","y",-1757859776),(0)], null),new cljs.core.Keyword(null,"image-scale","image-scale",1188015597),0.1,new cljs.core.Keyword(null,"image-rotation","image-rotation",397517612),(0)], null));
 }
 app.core.draw = (function app$core$draw(id){
 var canvas = document.getElementById(id);
@@ -23,7 +23,7 @@ return console.error("No image file URL yet.");
 app.core.deg_to_rad = (function app$core$deg_to_rad(degrees){
 return (degrees * (Math.PI / (180)));
 });
-app.core.draw_image = (function app$core$draw_image(canvas,image,x,y,scale){
+app.core.draw_image = (function app$core$draw_image(canvas,image,x,y,scale,rotation){
 var ctx = canvas.getContext("2d");
 var scaled_width = (image.width * scale);
 var scaled_height = (image.height * scale);
@@ -31,7 +31,15 @@ cljs.core.println.cljs$core$IFn$_invoke$arity$variadic(cljs.core.prim_seq.cljs$c
 
 ctx.clearRect((0),(0),canvas.width,canvas.height);
 
-return ctx.drawImage(image,x,y,scaled_width,scaled_height);
+ctx.save();
+
+ctx.rotate(app.core.deg_to_rad(rotation));
+
+ctx.translate((x + (scaled_width / (2))),(y + (scaled_height / (2))));
+
+ctx.drawImage(image,(- (scaled_width / (2))),(- (scaled_height / (2))),scaled_width,scaled_height);
+
+return ctx.restore();
 });
 app.core.create_image = (function app$core$create_image(image_file,callback){
 var image = document.createElement("img");
@@ -60,7 +68,7 @@ var data = ctx.getImageData((0),(0),canvas.width,canvas.height);
 cljs.core.println.cljs$core$IFn$_invoke$arity$variadic(cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2(["data",data], 0));
 
 var buf = data.data;
-return cljs.core.println.cljs$core$IFn$_invoke$arity$variadic(cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2(["width",image.width,"height",image.height,"bytes per pixel",(3)], 0));
+return cljs.core.println.cljs$core$IFn$_invoke$arity$variadic(cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2(["width",image.width,"height",image.height,"bytes per pixel",(3),"buf",buf], 0));
 });
 app.core.on_image_change = (function app$core$on_image_change(event){
 var image_file = URL.createObjectURL(cljs.core.first(event.target.files));
@@ -94,7 +102,7 @@ cljs.core.println.cljs$core$IFn$_invoke$arity$variadic(cljs.core.prim_seq.cljs$c
 
 cljs.core.swap_BANG_.cljs$core$IFn$_invoke$arity$4(app.core.app_state,cljs.core.assoc,new cljs.core.Keyword(null,"image-pos","image-pos",2145770002),new_pos);
 
-app.core.draw_image(canvas,new cljs.core.Keyword(null,"image","image",-58725096).cljs$core$IFn$_invoke$arity$1(cljs.core.deref(app.core.app_state)),new cljs.core.Keyword(null,"x","x",2099068185).cljs$core$IFn$_invoke$arity$1(new_pos),new cljs.core.Keyword(null,"y","y",-1757859776).cljs$core$IFn$_invoke$arity$1(new_pos),0.1);
+app.core.draw_image(canvas,new cljs.core.Keyword(null,"image","image",-58725096).cljs$core$IFn$_invoke$arity$1(cljs.core.deref(app.core.app_state)),new cljs.core.Keyword(null,"x","x",2099068185).cljs$core$IFn$_invoke$arity$1(new_pos),new cljs.core.Keyword(null,"y","y",-1757859776).cljs$core$IFn$_invoke$arity$1(new_pos),new cljs.core.Keyword(null,"image-scale","image-scale",1188015597).cljs$core$IFn$_invoke$arity$1(cljs.core.deref(app.core.app_state)),new cljs.core.Keyword(null,"image-rotation","image-rotation",397517612).cljs$core$IFn$_invoke$arity$1(cljs.core.deref(app.core.app_state)));
 
 return cljs.core.swap_BANG_.cljs$core$IFn$_invoke$arity$4(app.core.app_state,cljs.core.assoc,new cljs.core.Keyword(null,"drag-start","drag-start",292353430),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"x","x",2099068185),x,new cljs.core.Keyword(null,"y","y",-1757859776),y], null));
 } else {
@@ -106,7 +114,7 @@ return cljs.core.swap_BANG_.cljs$core$IFn$_invoke$arity$4(app.core.app_state,clj
 });
 app.core.app = (function app$core$app(){
 return new cljs.core.PersistentVector(null, 5, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"div","div",1057191632),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"h1","h1",-1896887462),"Hello from React and Shadow CLJS!"], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"input","input",556931961),new cljs.core.PersistentArrayMap(null, 5, [new cljs.core.Keyword(null,"type","type",1174270348),"file",new cljs.core.Keyword(null,"id","id",-1388402092),"input",new cljs.core.Keyword(null,"multiple","multiple",1244445549),true,new cljs.core.Keyword(null,"accept","accept",1874130431),"image/*",new cljs.core.Keyword(null,"on-change","on-change",-732046149),app.core.on_image_change], null)], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"canvas","canvas",-1798817489),new cljs.core.PersistentArrayMap(null, 8, [new cljs.core.Keyword(null,"id","id",-1388402092),"canvas",new cljs.core.Keyword(null,"width","width",-384071477),app.core.canvas_width,new cljs.core.Keyword(null,"height","height",1025178622),app.core.canvas_height,new cljs.core.Keyword(null,"style","style",-496642736),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"border","border",1444987323),"1px solid black"], null),new cljs.core.Keyword(null,"on-mouse-down","on-mouse-down",1147755470),app.core.on_mouse_down,new cljs.core.Keyword(null,"on-mouse-move","on-mouse-move",-1386320874),app.core.on_mouse_move,new cljs.core.Keyword(null,"on-mouse-up","on-mouse-up",-1340533320),app.core.on_mouse_up,new cljs.core.Keyword(null,"on-mouse-leave","on-mouse-leave",-1864319528),app.core.on_mouse_up], null)], null),new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"button","button",1456579943),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"on-click","on-click",1632826543),(function (){
-return app.core.draw_image(document.getElementById("canvas"),new cljs.core.Keyword(null,"image","image",-58725096).cljs$core$IFn$_invoke$arity$1(cljs.core.deref(app.core.app_state)),(0),(0),0.1);
+return app.core.draw_image(document.getElementById("canvas"),new cljs.core.Keyword(null,"image","image",-58725096).cljs$core$IFn$_invoke$arity$1(cljs.core.deref(app.core.app_state)),(0),(0),new cljs.core.Keyword(null,"image-scale","image-scale",1188015597).cljs$core$IFn$_invoke$arity$1(cljs.core.deref(app.core.app_state)),new cljs.core.Keyword(null,"image-rotation","image-rotation",397517612).cljs$core$IFn$_invoke$arity$1(cljs.core.deref(app.core.app_state)));
 })], null),"Draw transformed image"], null)], null);
 });
 app.core.mount = (function app$core$mount(){
